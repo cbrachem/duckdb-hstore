@@ -1,0 +1,23 @@
+# name: test/sql/hstore.test
+# description: test hstore extension
+# group: [sql]
+
+# Before we load the extension, this will fail
+statement error
+SELECT hstore('Sam');
+----
+Catalog Error: Scalar Function with name hstore does not exist!
+
+# Require statement will ensure this test is run with this extension loaded
+require hstore
+
+# Confirm the extension works
+query I
+SELECT hstore('Sam');
+----
+Hstore Sam 🐥
+
+query I
+SELECT hstore_openssl_version('Michael') ILIKE 'Hstore Michael, my linked OpenSSL version is OpenSSL%';
+----
+true

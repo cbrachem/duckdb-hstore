@@ -4,7 +4,7 @@ This repository is based on https://github.com/duckdb/extension-template, check 
 
 ---
 
-This extension, Hstore, allow you to ... <extension_goal>.
+This extension, Hstore, allow you to read data from PostgreSQL hstore columns.
 
 
 ## Building

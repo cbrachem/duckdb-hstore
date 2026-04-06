@@ -130,6 +130,45 @@ std::vector<HstorePair> ParseHstore(std::string_view input) {
 	return pairs;
 }
 
+void JsonEscapeString(std::string &out, const std::string &s) {
+	out += '"';
+	for (char c : s) {
+		switch (c) {
+		case '"':
+			out += "\\\"";
+			break;
+		case '\\':
+			out += "\\\\";
+			break;
+		case '\b':
+			out += "\\b";
+			break;
+		case '\f':
+			out += "\\f";
+			break;
+		case '\n':
+			out += "\\n";
+			break;
+		case '\r':
+			out += "\\r";
+			break;
+		case '\t':
+			out += "\\t";
+			break;
+		default:
+			if (static_cast<unsigned char>(c) < 0x20) {
+				char buf[8];
+				snprintf(buf, sizeof(buf), "\\u%04x", static_cast<unsigned char>(c));
+				out += buf;
+			} else {
+				out += c;
+			}
+			break;
+		}
+	}
+	out += '"';
+}
+
 } // namespace
 
 inline void HstoreGetFun(DataChunk &args, ExpressionState &state, Vector &result) {
@@ -155,11 +194,40 @@ inline void HstoreGetFun(DataChunk &args, ExpressionState &state, Vector &result
 	    });
 }
 
+inline void HstoreToJsonFun(DataChunk &args, ExpressionState &state, Vector &result) {
+	auto &hstore_vector = args.data[0];
+
+	UnaryExecutor::Execute<string_t, string_t>(hstore_vector, result, args.size(), [&](string_t hstore_str) -> string_t {
+		auto pairs = ParseHstore(hstore_str.GetString());
+		std::string json;
+		json += '{';
+		bool first = true;
+		for (auto &pair : pairs) {
+			if (!first) {
+				json += ", ";
+			}
+			first = false;
+			JsonEscapeString(json, pair.key);
+			json += ": ";
+			if (pair.value.has_value()) {
+				JsonEscapeString(json, *pair.value);
+			} else {
+				json += "null";
+			}
+		}
+		json += '}';
+		return StringVector::AddString(result, json);
+	});
+}
+
 static void LoadInternal(ExtensionLoader &loader) {
-	// Register a scalar function
-	auto hstore_scalar_function =
+	auto hstore_get =
 	    ScalarFunction("hstore_get", {LogicalType::VARCHAR, LogicalType::VARCHAR}, LogicalType::VARCHAR, HstoreGetFun);
-	loader.RegisterFunction(hstore_scalar_function);
+	loader.RegisterFunction(hstore_get);
+
+	auto hstore_to_json =
+		ScalarFunction("hstore_to_json", {LogicalType::VARCHAR}, LogicalType::JSON(), HstoreToJsonFun);
+	loader.RegisterFunction(hstore_to_json);
 }
 
 void HstoreExtension::Load(ExtensionLoader &loader) {

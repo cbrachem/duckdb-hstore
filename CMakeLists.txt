@@ -19,6 +19,9 @@ set(EXTENSION_SOURCES src/hstore_extension.cpp)
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})
 
+target_compile_features(${EXTENSION_NAME} PRIVATE cxx_std_17)
+target_compile_features(${LOADABLE_EXTENSION_NAME} PRIVATE cxx_std_17)
+
 # Link OpenSSL in both the static library as the loadable extension
 target_link_libraries(${EXTENSION_NAME} OpenSSL::SSL OpenSSL::Crypto)
 target_link_libraries(${LOADABLE_EXTENSION_NAME} OpenSSL::SSL OpenSSL::Crypto)

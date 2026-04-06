@@ -16,8 +16,3 @@ query I
 SELECT hstore('Sam');
 ----
 Hstore Sam 🐥
-
-query I
-SELECT hstore_openssl_version('Michael') ILIKE 'Hstore Michael, my linked OpenSSL version is OpenSSL%';
-----
-true

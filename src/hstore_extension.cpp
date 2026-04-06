@@ -7,16 +7,21 @@
 
 namespace duckdb {
 
-inline void HstoreScalarFun(DataChunk &args, ExpressionState &state, Vector &result) {
-	auto &name_vector = args.data[0];
-	UnaryExecutor::Execute<string_t, string_t>(name_vector, result, args.size(), [&](string_t name) {
-		return StringVector::AddString(result, "Hstore " + name.GetString() + " 🐥");
-	});
+inline void HstoreGetFun(DataChunk &args, ExpressionState &state, Vector &result) {
+	auto &hstore_vector = args.data[0];
+	auto &key_vector = args.data[1];
+
+	BinaryExecutor::Execute<string_t, string_t, string_t>(
+	    hstore_vector, key_vector, result, args.size(), [&](string_t hstore, string_t key) {
+		    return StringVector::AddString(result, "called hstore_get with hstore = " + hstore.GetString() +
+		                                               ", key = " + key.GetString());
+	    });
 }
 
 static void LoadInternal(ExtensionLoader &loader) {
 	// Register a scalar function
-	auto hstore_scalar_function = ScalarFunction("hstore", {LogicalType::VARCHAR}, LogicalType::VARCHAR, HstoreScalarFun);
+	auto hstore_scalar_function =
+	    ScalarFunction("hstore_get", {LogicalType::VARCHAR, LogicalType::VARCHAR}, LogicalType::VARCHAR, HstoreGetFun);
 	loader.RegisterFunction(hstore_scalar_function);
 }
 

@@ -165,3 +165,59 @@ statement error
 SELECT hstore_get('aa=>"', 'x');
 ----
 Invalid Input Error
+
+# --- hstore_to_json: basic conversion ---
+
+query I
+SELECT hstore_to_json('"a key" =>1, b => t, c => null, d=> 12345, e => 012345, f=> 1.234, g=> 2.345e+4');
+----
+{"a key": "1", "b": "t", "c": null, "d": "12345", "e": "012345", "f": "1.234", "g": "2.345e+4"}
+
+# --- hstore_to_json: empty hstore ---
+
+query I
+SELECT hstore_to_json('');
+----
+{}
+
+# --- hstore_to_json: NULL input ---
+
+query I
+SELECT hstore_to_json(NULL);
+----
+NULL
+
+# --- hstore_to_json: quoted key with space ---
+
+query I
+SELECT hstore_to_json('"a key"=>1, b=>2');
+----
+{"a key": "1", "b": "2"}
+
+# --- hstore_to_json: quoted value with escaped quotes ---
+
+query I
+SELECT hstore_to_json('k=>"val \"q\""');
+----
+{"k": "val \"q\""}
+
+# --- hstore_to_json: hstore NULL value becomes json null ---
+
+query I
+SELECT hstore_to_json('a=>null, b=>2');
+----
+{"a": null, "b": "2"}
+
+# --- hstore_to_json: preserves input order ---
+
+query I
+SELECT hstore_to_json('z=>1, a=>2, m=>3');
+----
+{"z": "1", "a": "2", "m": "3"}
+
+# --- hstore_to_json: value type is JSON ---
+
+query T
+SELECT typeof(hstore_to_json('a=>1'));
+----
+JSON

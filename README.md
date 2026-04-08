@@ -4,7 +4,13 @@ This extension provides support for reading data from PostgreSQL hstore columns 
 
 ## Installation
 
-`INSTALL hstore FROM 'https://github.com/cbrachem/duckdb-hstore';`
+For the moment, you'll need to download the version for your system [from the latest build run](https://github.com/cbrachem/duckdb-hstore/actions/workflows/MainDistributionPipeline.yml),
+unzip it, and then load it via
+```
+```sql
+INSTALL hstore from '/path/to/downloaded/hstore.duckdb_extension';
+LOAD hstore;
+```
 
 ## Functions
 

@@ -8,8 +8,7 @@ For the moment, you'll need to download the version for your system [from the la
 unzip it, and then load it via
 ```
 ```sql
-INSTALL hstore from '/path/to/downloaded/hstore.duckdb_extension';
-LOAD hstore;
+LOAD '/path/to/downloaded/hstore.duckdb_extension';
 ```
 
 ## Functions
